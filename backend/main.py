@@ -1,32 +1,57 @@
-#-x : Extract/get/unzip files from an archive.
-#-f archive.tar.xz : Use this archive file or device archive for extracting files
+"""
+SOSReport Extractor and Reader.
+
+This module extracts and reads sosreport tar.xz archives.
+"""
 import tarfile as tar
-import shutil
 import os
-import stat
 
-file_path = "../sosreport-localhost-2025-12-18-xhewwvh.tar.xz"
-sosreport_name = os.path.basename(file_path).replace('.tar.xz', '')
-extract_dir = './extracted'
-expected_path = os.path.join(extract_dir, sosreport_name)
+FILE_PATH = "../sosreport-localhost-2025-12-18-xhewwvh.tar.xz"
+SOSREPORT_NAME = os.path.basename(FILE_PATH).replace('.tar.xz', '')
+EXTRACT_DIR = './extracted'
+EXPECTED_PATH = os.path.join(EXTRACT_DIR, SOSREPORT_NAME)
 
-def extract_sosreport(file_path):
-    if os.path.exists(extract_dir):
-        print(f"'{sosreport_name}' already extracted at '{expected_path}', skipping...")
+
+def extract_sosreport(tar_path):
+    """Extract sosreport from tar.xz archive."""
+    if os.path.exists(EXTRACT_DIR):
+        print(f"'{SOSREPORT_NAME}' already extracted at '{EXPECTED_PATH}', skipping...")
     else:
-        print(f"sosreport name and expected path are not the same")
+        print("Extracting sosreport...")
         try:
-            file = tar.open(file_path, "r:xz")
-            print("sosreport found and extracting files...")
-            print(file.getmembers())
-            file.extractall(extract_dir, filter='data')  # 'data' filter ignores permissions
-            file.close()
-            print("Extraction completed successfully")
-        except tar.ReadError as e:
-            print(f"Error reading file. Could not open '{file_path}' as a tar archive.")
+            with tar.open(tar_path, "r:xz") as archive:
+                print("sosreport found and extracting files...")
+                print(archive.getmembers())
+                archive.extractall(EXTRACT_DIR, filter='data')
+                print("Extraction completed successfully")
+        except tar.ReadError:
+            print(f"Error reading file. Could not open '{tar_path}' as a tar archive.")
         except FileNotFoundError:
-            print(f"Error: The file '{file_path}' was not found.")
-        except PermissionError as e:
-            print(f"Permission error: {e}")
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
+            print(f"Error: The file '{tar_path}' was not found.")
+        except PermissionError as err:
+            print(f"Permission error: {err}")
+
+
+def get_sosreport_info(sos_path):
+    """Enter the sosreport directory and list its contents."""
+    if not os.path.exists(sos_path):
+        print(f"Path does not exist: {sos_path}")
+        return
+
+    # Save current directory
+    current_dir = os.getcwd()
+
+    # Enter the sosreport directory
+    os.chdir(sos_path)
+    print(f"Entered directory: {os.getcwd()}\n")
+
+    # List contents of current directory
+    print("--- Contents ---")
+    for item in os.listdir('.'):
+        if os.path.isdir(item):
+            print(f"  [DIR]  {item}/")
+        else:
+            print(f"  [FILE] {item}")
+
+    # Go back to original directory
+    os.chdir(current_dir)
