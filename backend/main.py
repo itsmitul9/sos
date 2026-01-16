@@ -55,3 +55,19 @@ def get_sosreport_info(sos_path):
 
     # Go back to original directory
     os.chdir(current_dir)
+
+def get_cpu_info(cpuinfo_path):
+    """Read CPU info from sosreport's proc/cpuinfo file."""
+    if not os.path.exists(cpuinfo_path):
+        print(f"File not found: {cpuinfo_path}")
+        return
+    with open(cpuinfo_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            if 'model name' in line:
+                print(line.strip())
+
+get_sosreport_info(EXPECTED_PATH)
+
+# Build the path to cpuinfo file
+cpuinfo_file = os.path.join(EXPECTED_PATH, 'proc', 'cpuinfo')
+get_cpu_info(cpuinfo_file)
